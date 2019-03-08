@@ -19,8 +19,6 @@ def test_view_balance():
     assert checkbook.view_balance("dummy_ledger_file2.csv") == 40.00
     assert checkbook.view_balance("dummy_ledger_file3.csv") == -20.00
 
-# def test_withdraw():
-#     assert withdraw
 
 def test_write_record():
     dummy_filename = "write_record_dummy.csv"
@@ -42,3 +40,14 @@ def test_write_record():
         assert float(amounts[2]) == -1.98
 
     os.remove(dummy_filename)
+
+
+def test_is_valid_amount():
+    assert not checkbook.is_valid_amount("abcd")
+    assert not checkbook.is_valid_amount("1.03.45")
+    assert not checkbook.is_valid_amount("abcd.efg")
+    assert not checkbook.is_valid_amount("34.586")
+
+    assert checkbook.is_valid_amount("1.23")
+    assert checkbook.is_valid_amount("34.56")
+    assert checkbook.is_valid_amount("2345.23")

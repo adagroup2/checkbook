@@ -1,10 +1,17 @@
 import csv
 import datetime
+import os
 
-# CONSTANTS
+# CONSTANTS ##################################################################
 TIMESTAMP_ROW = "timestamp"
+DESCRIPTION_ROW = "description"
 AMOUNT_ROW = "amount"
-FIELDNAMES = (TIMESTAMP_ROW, AMOUNT_ROW)
+CSV_HEADER = {
+    TIMESTAMP_ROW: TIMESTAMP_ROW,
+    DESCRIPTION_ROW: DESCRIPTION_ROW,
+    AMOUNT_ROW: AMOUNT_ROW,
+}
+FIELDNAMES = (TIMESTAMP_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
 LEDGER_FILENAME = "ledger.csv"
 ##############################################################################
 
@@ -18,7 +25,8 @@ def view_balance(ledger_file):
     """
     with open(ledger_file) as lf:
         reader = csv.DictReader(lf)
-        return sum([float(row[AMOUNT_ROW]) for row in reader])
+        amounts = [float(row[AMOUNT_ROW]) for row in reader]
+        return sum(amounts)
 
 
 def write_record(ledger_file, record):
@@ -46,14 +54,26 @@ def create_withdraw_record(amount):
 
 def is_valid_amount(amount):
     """
-    str --> bool
+    str -> bool
 
     amount is inputted value from user for debit/credit
     function ensures input is valid and not a negative value
     """
-    while not amount.isdigit() or amount.startswith("-"):
-        amount = input("Please enter a non-negative dollar value: ")
-    return amount == True
+    pass
+
+
+def get_valid_amount(prompt):
+    """
+    str -> float
+
+    amount is inputted value from user for debit/credit
+    function ensures input is valid and not a negative value
+    """
+    input_amount = input(prompt)
+    while not is_valid_amount(input_amount):
+        input_amount = input("Please enter a non-negative dollar value: ")
+
+    return float(input_amount)
 
 
 def checkbook_loop():
@@ -96,37 +116,12 @@ def checkbook_loop():
         print()
         checkbook_loop()
 
-    # while action_choice == "y" or action_choice.lower() == "yes":
-    #     action_choice = input(
-    #         "What would you like to do? \n1) View current balance\n2) record a debit withdraw\n3) record a credit deposit\n4) exit \n "
-    #     )
-    #     while not action_choice in ("1234"):
-    #         action_choice = input("Invalid choice. Please enter 1-4: ")
-
-    #     if int(action_choice) == 1:
-    #         print(action_choice)
-    #         # view_balance()
-    #     elif int(action_choice) == 2:
-    #         print(action_choice)
-    #         # debit()
-    #     elif int(action_choice) == 3:
-    #         print(action_choice)
-    #         # credit()
-    #     elif int(action_choice) == 4:
-    #         exit()
-    #     action_choice = input(
-    #         "Would you like to make another transaction (y/n)? "
-    #     )
-
 
 if __name__ == "__main__":
-    try:
-        with open(LEDGER_FILENAME, "x") as lf:
+    if not os.path.isfile(LEDGER_FILENAME):
+        with open(LEDGER_FILENAME, "w") as lf:
             writer = csv.DictWriter(lf, FIELDNAMES)
-            writer.writerow(
-                {TIMESTAMP_ROW: TIMESTAMP_ROW, AMOUNT_ROW: AMOUNT_ROW}
-            )
-    except FileExistsError:
-        pass
+            writer.writerow(CSV_HEADER)
+
     print("~~~ Welcome to your terminal checkbook! ~~~\n")
     checkbook_loop()
