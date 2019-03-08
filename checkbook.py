@@ -73,10 +73,11 @@ def is_valid_amount(amount):
     amount is inputted value from user for debit/credit
     function ensures input is valid and not a negative value
     """
-    if not amount.isdigit() or amount.startswith('-'):
+    if not amount.isdigit() or amount.startswith("-"):
         return False
     else:
         return True
+
 
 def get_valid_amount(prompt):
     """
@@ -91,14 +92,32 @@ def get_valid_amount(prompt):
     return float(input_amount)
 
 
+def has_another_transaction(prompt):
+    """
+    str -> bool
+
+    prompt is the prompt presented to the user
+
+    return True is user has another transaction; otherwise, False
+    """
+
+    action_choice = input("Would you like to make another transaction (y/n)? ")
+    if action_choice.lower() == "y" or action_choice.lower() == "yes":
+        return True
+    elif action_choice.lower() == "n" or action_choice.lower() == "no":
+        return False
+    else:
+        return has_another_transaction(prompt)
+
+
 def checkbook_loop():
     curr_bal = view_balance
     prompt = (
-        "What would you like to do?\n"
+        "What would you like to do?\n\n"
         "1) View current balance\n"
         "2) Record a debit (withdraw)\n"
         "3) Record a credit (deposit)\n"
-        "4) Exit\n"
+        "4) Exit\n\n"
         "Your choice? "
     )
     action_choice = input(prompt)
@@ -112,24 +131,27 @@ def checkbook_loop():
         print("Your current balance is : ${}".format(curr_bal))
 
     elif int(action_choice) == 2:
-        debit_value = input("Enter amount for withdrawal in dollars: $")
-        if is_valid_amount(debit_value):
-            withdraw_record = create_withdraw_record(debit_value)
-            # write_record(ledger_file, record)
+        withdraw_prompt = "Enter amount for withdrawal in dollars: $"
+        debit_value = get_valid_amount(withdraw_prompt)
+        withdraw_record = create_withdraw_record(debit_value)
+        write_record(LEDGER_FILENAME, withdraw_record)
+
     elif int(action_choice) == 3:
-        credit_value = input("Enter amount for deposit in dollars: $")
-        if is_valid_amount(credit_value):
-            # deposit_record = create_deposit_record(credit_value)
-            # write_record(ledger_file, record)
-            pass
+        deposit_prompt = "Enter amount for deposit in dollars: $"
+        credit_value = get_valid_amount(deposit_prompt)
+        deposit_record = create_deposit_record(credit_value)
+        write_record(LEDGER_FILENAME, deposit_record)
+
     elif int(action_choice) == 4:
-        exit()
+        return
     ##########################################################################
 
-    action_choice = input("Would you like to make another transaction (y/n)? ")
-    if action_choice.lower() == "y" or action_choice.lower() == "yes":
+    continue_prompt = "Would you like to make another transaction (y/n)? "
+    if has_another_transaction(continue_prompt):
         print()
         checkbook_loop()
+    else:
+        return
 
 
 if __name__ == "__main__":
@@ -138,5 +160,5 @@ if __name__ == "__main__":
             writer = csv.DictWriter(lf, FIELDNAMES)
             writer.writerow(CSV_HEADER)
 
-    print("~~~ Welcome to your terminal checkbook! ~~~\n")
+    print("\n~~~ Welcome to your terminal checkbook! ~~~\n")
     checkbook_loop()
