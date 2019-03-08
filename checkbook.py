@@ -3,16 +3,18 @@ import datetime
 import os
 
 # CONSTANTS ##################################################################
+ID_ROW = "id"
 TIMESTAMP_ROW = "timestamp"
 CATEGORY_ROW = "category"
 DESCRIPTION_ROW = "description"
 AMOUNT_ROW = "amount"
-FIELDNAMES = (TIMESTAMP_ROW, CATEGORY_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
+FIELDNAMES = (ID_ROW, TIMESTAMP_ROW, CATEGORY_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
 CSV_HEADER = {
     FIELDNAMES[0]: FIELDNAMES[0],
     FIELDNAMES[1]: FIELDNAMES[1],
     FIELDNAMES[2]: FIELDNAMES[2],
     FIELDNAMES[3]: FIELDNAMES[3],
+    FIELDNAMES[4]: FIELDNAMES[4],
 }
 
 LEDGER_FILENAME = "ledger.csv"
@@ -24,7 +26,8 @@ def view_balance(ledger_file):
     str -> float
 
     ledger_file is the name of the ledger file
-    read balance calculated from ledger file
+
+    return balance calculated from ledger file
     """
     with open(ledger_file) as lf:
         reader = csv.DictReader(lf)
@@ -37,7 +40,9 @@ def write_record(ledger_file, record):
     str, dict -> None
 
     ledger_file is the name of the ledger file
-    record is a dictionary of "column": data
+    record is a dictionary of "column_name": data
+
+    write record to end of ledger file
     """
     with open(ledger_file, "a") as lf:
         writer = csv.DictWriter(lf, FIELDNAMES)
@@ -50,9 +55,9 @@ def create_deposit_record(category, description, amount):
 
     category is category of purchase (e.g., income, reimbursement)
     description is a description of the purchase (e.g., "paycheck for March")
-    amount is a float of the amount to deposit
+    amount is the amount to deposit
 
-    return dictionary of withdraw record
+    return dictionary of deposit record
     """
     timestamp = datetime.datetime.now()
     return {
@@ -69,7 +74,7 @@ def create_withdraw_record(category, description, amount):
 
     category is category of purchase (e.g., grocery, child care)
     description is a description of the purchase (e.g., "beer for party")
-    amount is a float of the amount to withdraw
+    amount is the amount to withdraw
 
     return dictionary of withdraw record
     """
@@ -82,12 +87,31 @@ def create_withdraw_record(category, description, amount):
     }
 
 
+def modify_transaction():
+    pass
+
+
+def last_row_id(ledger_file):
+    """
+    str -> int
+
+    ledger_file is the name of the ledger file
+
+    return id of the last row in ledger file or 0 if no last row
+    """
+    with open(ledger_file) as lf:
+        reader = csv.DictReader(lf, FIELDNAMES)
+        rows = [row for row in reader]
+        return int(reader[-1][ID_ROW]) if len(rows) > 0 else 0
+
+
 def is_valid_amount(amount):
     """
     str -> bool
 
     amount is inputted value from user for debit/credit
-    function ensures input is valid and not a negative value
+
+    return True if amount is valid; otherwise, False
     """
     amount_tokens = amount.split(".")
     if len(amount_tokens) == 1:
@@ -104,8 +128,9 @@ def get_valid_amount(prompt):
     """
     str -> float
 
-    amount is inputted value from user for debit/credit
-    function ensures input is valid and not a negative value
+    prompt is prompt to present to user
+
+    return the amount user inputs cast to a float
     """
     input_amount = input(prompt)
     while not is_valid_amount(input_amount):
@@ -114,6 +139,9 @@ def get_valid_amount(prompt):
 
 
 def checkbook_loop():
+    """
+    implements CLI for checkbook application
+    """
     curr_bal = view_balance
     prompt = (
         "What would you like to do?\n\n"
