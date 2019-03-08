@@ -53,32 +53,32 @@ def is_valid_amount(amount):
     return amount == True
 
 
-if __name__ == "__main__":
+def checkbook_loop():
     curr_bal = view_balance
-    print("~~~ Welcome to your terminal checkbook! ~~~\n")
-
-    action_choice = input(
-        """What would you like to do?
-    1) View current balance
-    2) record a debit (withdraw)
-    3) record a credit (deposit)
-    4) exit
-    """
+    prompt = (
+        "What would you like to do?\n"
+        "1) View current balance\n"
+        "2) Record a debit (withdraw)\n"
+        "3) Record a credit (deposit)\n"
+        "4) Exit\n"
+        "Your choice? "
     )
+    action_choice = input(prompt)
+
     while not action_choice in ("1234"):
         action_choice = input("Invalid choice. Please enter 1-4: ")
 
     if int(action_choice) == 1:
         curr_bal = view_balance()
-        print('Your current balance is : $ {}'.format(curr_val))
+        print("Your current balance is : $ {}".format(curr_val))
 
     elif int(action_choice) == 2:
-        debit_value = input('Enter amount for withdrawl in dollars: $')
+        debit_value = input("Enter amount for withdrawl in dollars: $")
         if is_valid_amount(debit_value):
             withdraw_record = create_withdraw_record(debit_value)
             # write_record(ledger_file, record)
     elif int(action_choice) == 3:
-        credit_value = input('Enter amount for deposit in dollars: $')
+        credit_value = input("Enter amount for deposit in dollars: $")
         if is_valid_amount(credit_value):
             deposit_record = create_deposit_record(credit_value)
             # write_record(ledger_file, record)
@@ -107,3 +107,9 @@ if __name__ == "__main__":
         action_choice = input(
             "Would you like to make another transaction (y/n)? "
         )
+
+
+if __name__ == "__main__":
+    print("~~~ Welcome to your terminal checkbook! ~~~\n")
+    checkbook_loop()
+
