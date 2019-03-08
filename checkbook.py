@@ -6,12 +6,13 @@ import os
 TIMESTAMP_ROW = "timestamp"
 DESCRIPTION_ROW = "description"
 AMOUNT_ROW = "amount"
-CSV_HEADER = {
-    TIMESTAMP_ROW: TIMESTAMP_ROW,
-    DESCRIPTION_ROW: DESCRIPTION_ROW,
-    AMOUNT_ROW: AMOUNT_ROW,
-}
 FIELDNAMES = (TIMESTAMP_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
+CSV_HEADER = {
+    FIELDNAMES[0]: FIELDNAMES[0],
+    FIELDNAMES[1]: FIELDNAMES[1],
+    FIELDNAMES[2]: FIELDNAMES[2],
+}
+
 LEDGER_FILENAME = "ledger.csv"
 ##############################################################################
 
@@ -41,12 +42,25 @@ def write_record(ledger_file, record):
         writer.writerow(record)
 
 
+def create_deposit_record(amount):
+    """
+    float -> dict
+
+    amount is a float of the amount to deposit
+
+    return dictionary of withdraw record
+    """
+    timestamp = datetime.datetime.now()
+    return {TIMESTAMP_ROW: timestamp, AMOUNT_ROW: amount}
+
+
 def create_withdraw_record(amount):
     """
-    str, float -> None
+    float -> dict
 
-    ledger_file is the name of the ledger file
-    float is the amount of the withdrawal
+    amount is a float of the amount to withdraw
+
+    return dictionary of withdraw record
     """
     timestamp = datetime.datetime.now()
     return {TIMESTAMP_ROW: timestamp, AMOUNT_ROW: -1 * amount}
@@ -91,7 +105,7 @@ def checkbook_loop():
     while action_choice not in ("1234"):
         action_choice = input("Invalid choice. Please enter 1-4: ")
 
-    # process user input #####################################################
+    # process menu choice #####################################################
     if int(action_choice) == 1:
         curr_bal = view_balance()
         print("Your current balance is : ${}".format(curr_bal))

@@ -4,6 +4,16 @@ import datetime
 import os
 
 
+def test_create_deposit_record():
+    deposit1 = checkbook.create_deposit_record(1.00)
+    assert isinstance(deposit1[checkbook.TIMESTAMP_ROW], datetime.datetime)
+    assert deposit1[checkbook.AMOUNT_ROW] == 1.00
+
+    deposit2 = checkbook.create_deposit_record(20.14)
+    assert isinstance(deposit2[checkbook.TIMESTAMP_ROW], datetime.datetime)
+    assert deposit2[checkbook.AMOUNT_ROW] == 20.14
+
+
 def test_create_withdraw_record():
     withdraw1 = checkbook.create_withdraw_record(1.00)
     assert isinstance(withdraw1[checkbook.TIMESTAMP_ROW], datetime.datetime)
