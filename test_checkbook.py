@@ -17,6 +17,5 @@ def test_view_balance():
     assert checkbook.view_balance("dummy_ledger_file2.csv") == 40.00
     assert checkbook.view_balance("dummy_ledger_file3.csv") == -20.00
 
-
 # def test_withdraw():
 #     assert withdraw
