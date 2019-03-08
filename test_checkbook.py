@@ -1,5 +1,7 @@
 import checkbook
+import csv
 import datetime
+import os
 
 
 def test_create_withdraw_record():
@@ -19,3 +21,24 @@ def test_view_balance():
 
 # def test_withdraw():
 #     assert withdraw
+
+def test_write_record():
+    dummy_filename = "write_record_dummy.csv"
+    checkbook.write_record(
+        dummy_filename, checkbook.create_withdraw_record(20.50)
+    )
+    checkbook.write_record(
+        dummy_filename, checkbook.create_withdraw_record(60.33)
+    )
+    checkbook.write_record(
+        dummy_filename, checkbook.create_withdraw_record(1.98)
+    )
+
+    with open(dummy_filename) as df:
+        reader = csv.DictReader(df, checkbook.FIELDNAMES)
+        amounts = [row[checkbook.AMOUNT_ROW] for row in reader]
+        assert float(amounts[0]) == -20.50
+        assert float(amounts[1]) == -60.33
+        assert float(amounts[2]) == -1.98
+
+    os.remove(dummy_filename)
