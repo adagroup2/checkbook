@@ -18,7 +18,7 @@ def view_balance(ledger_file):
         return sum([float(row[AMOUNT_ROW]) for row in reader])
 
 
-def record_transaction(ledger_file, record):
+def write_record(ledger_file, record):
     """
     str, dict -> None
 
@@ -30,17 +30,15 @@ def record_transaction(ledger_file, record):
         writer.writerow(record)
 
 
-def withdraw(ledger_file, amount):
+def create_withdraw_record(amount):
     """
     str, float -> None
 
     ledger_file is the name of the ledger file
     float is the amount of the withdrawal
     """
-    with open(ledger_file, "a") as lf:
-        writer = csv.DictWriter(lf, FIELDNAMES)
-        timestamp = datetime.datetime.now()
-        writer.writerow({TIMESTAMP_ROW: timestamp, AMOUNT_ROW: amount})
+    timestamp = datetime.datetime.now()
+    return {TIMESTAMP_ROW: timestamp, AMOUNT_ROW: -1 * amount}
 
 def is_valid_amount(amount):
     '''
