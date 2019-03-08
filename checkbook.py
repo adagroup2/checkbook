@@ -1,3 +1,46 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 print('~~~ Welcome to your terminal checkbook! ~~~\n')
 
 action_choice = input('''What would you like to do?
