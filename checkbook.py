@@ -54,6 +54,7 @@ def is_valid_amount(amount):
 
 
 if __name__ == "__main__":
+    curr_bal = view_balance
     print("~~~ Welcome to your terminal checkbook! ~~~\n")
 
     action_choice = input(
@@ -68,14 +69,19 @@ if __name__ == "__main__":
         action_choice = input("Invalid choice. Please enter 1-4: ")
 
     if int(action_choice) == 1:
-        print(action_choice)
-        # view_balance()
+        curr_bal = view_balance()
+        print('Your current balance is : $ {}'.format(curr_val))
+
     elif int(action_choice) == 2:
-        print(action_choice)
-        # debit()
+        debit_value = input('Enter amount for withdrawl in dollars: $')
+        if is_valid_amount(debit_value):
+            withdraw_record = create_withdraw_record(debit_value)
+            # write_record(ledger_file, record)
     elif int(action_choice) == 3:
-        print(action_choice)
-        # credit()
+        credit_value = input('Enter amount for deposit in dollars: $')
+        if is_valid_amount(credit_value):
+            deposit_record = create_deposit_record(credit_value)
+            # write_record(ledger_file, record)
     elif int(action_choice) == 4:
         exit()
 
