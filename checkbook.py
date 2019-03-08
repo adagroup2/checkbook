@@ -73,10 +73,18 @@ def is_valid_amount(amount):
     amount is inputted value from user for debit/credit
     function ensures input is valid and not a negative value
     """
+<<<<<<< HEAD
     if not amount.isdigit() or amount.startswith("-"):
+=======
+    if amount.startswith('-'):
+>>>>>>> a02e4ae18357968461e0092a712aa79b43a84fb1
         return False
     else:
-        return True
+        try:
+            float(amount)
+            return True
+        except ValueError:
+            return False
 
 
 def get_valid_amount(prompt):
