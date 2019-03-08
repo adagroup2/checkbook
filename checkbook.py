@@ -42,6 +42,17 @@ def withdraw(ledger_file, amount):
         timestamp = datetime.datetime.now()
         writer.writerow({TIMESTAMP_ROW: timestamp, AMOUNT_ROW: amount})
 
+def is_valid_amount(amount):
+    '''
+    str --> bool
+
+    amount is inputted value from user for debit/credit
+    function ensures input is valid and not a negative value
+    '''
+    while not amount.isdigit() or amount.startswith('-'):
+        amount = input('Please enter a non-negative dollar value: ')
+    return amount == True
+
 
 print("~~~ Welcome to your terminal checkbook! ~~~\n")
 
