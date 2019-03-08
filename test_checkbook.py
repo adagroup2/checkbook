@@ -5,22 +5,39 @@ import os
 
 
 def test_create_deposit_record():
-    deposit1 = checkbook.create_deposit_record(1.00)
+    deposit1 = checkbook.create_deposit_record(
+        "income", "paycheck for March", 1.00
+    )
     assert isinstance(deposit1[checkbook.TIMESTAMP_ROW], datetime.datetime)
+    assert deposit1[checkbook.CATEGORY_ROW] == "income"
+    assert deposit1[checkbook.DESCRIPTION_ROW] == "paycheck for March"
     assert deposit1[checkbook.AMOUNT_ROW] == 1.00
 
-    deposit2 = checkbook.create_deposit_record(20.14)
+    deposit2 = checkbook.create_deposit_record(
+        "reimbursement", "reimbursement for beer for party", 20.14
+    )
     assert isinstance(deposit2[checkbook.TIMESTAMP_ROW], datetime.datetime)
+    assert deposit2[checkbook.CATEGORY_ROW] == "reimbursement"
+    assert (
+        deposit2[checkbook.DESCRIPTION_ROW]
+        == "reimbursement for beer for party"
+    )
     assert deposit2[checkbook.AMOUNT_ROW] == 20.14
 
 
 def test_create_withdraw_record():
-    withdraw1 = checkbook.create_withdraw_record(1.00)
+    withdraw1 = checkbook.create_withdraw_record("grocery", "gum", 1.00)
     assert isinstance(withdraw1[checkbook.TIMESTAMP_ROW], datetime.datetime)
+    assert withdraw1[checkbook.CATEGORY_ROW] == "grocery"
+    assert withdraw1[checkbook.DESCRIPTION_ROW] == "gum"
     assert withdraw1[checkbook.AMOUNT_ROW] == -1.00
 
-    withdraw2 = checkbook.create_withdraw_record(20.14)
+    withdraw2 = checkbook.create_withdraw_record(
+        "child care", "babysitter for one hour", 20.14
+    )
     assert isinstance(withdraw2[checkbook.TIMESTAMP_ROW], datetime.datetime)
+    assert withdraw2[checkbook.CATEGORY_ROW] == "child care"
+    assert withdraw2[checkbook.DESCRIPTION_ROW] == "babysitter for one hour"
     assert withdraw2[checkbook.AMOUNT_ROW] == -20.14
 
 
@@ -33,18 +50,37 @@ def test_view_balance():
 def test_write_record():
     dummy_filename = "write_record_dummy.csv"
     checkbook.write_record(
-        dummy_filename, checkbook.create_withdraw_record(20.50)
+        dummy_filename,
+        checkbook.create_withdraw_record("test1", "test1", 20.50),
     )
     checkbook.write_record(
-        dummy_filename, checkbook.create_withdraw_record(60.33)
+        dummy_filename,
+        checkbook.create_withdraw_record("test2", "test2 test2", 60.33),
     )
     checkbook.write_record(
-        dummy_filename, checkbook.create_withdraw_record(1.98)
+        dummy_filename,
+        checkbook.create_withdraw_record("test3", "test3 test3 test3", 1.98),
     )
 
     with open(dummy_filename) as df:
         reader = csv.DictReader(df, checkbook.FIELDNAMES)
-        amounts = [row[checkbook.AMOUNT_ROW] for row in reader]
+
+        categories = []
+        descriptions = []
+        amounts = []
+        for row in reader:
+            categories.append(row[checkbook.CATEGORY_ROW])
+            descriptions.append(row[checkbook.DESCRIPTION_ROW])
+            amounts.append(row[checkbook.AMOUNT_ROW])
+
+        assert categories[0] == "test1"
+        assert categories[1] == "test2"
+        assert categories[2] == "test3"
+
+        assert descriptions[0] == "test1"
+        assert descriptions[1] == "test2 test2"
+        assert descriptions[2] == "test3 test3 test3"
+
         assert float(amounts[0]) == -20.50
         assert float(amounts[1]) == -60.33
         assert float(amounts[2]) == -1.98
