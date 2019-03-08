@@ -88,6 +88,11 @@ def test_write_record():
     os.remove(dummy_filename)
 
 
+def test_last_row_id():
+    assert checkbook.last_row_id("dummy_ledger_file4.csv") == 0
+    assert checkbook.last_row_id("dummy_ledger_file5.csv") == 2
+
+
 def test_is_valid_amount():
     assert not checkbook.is_valid_amount("abcd")
     assert not checkbook.is_valid_amount("1.03.45")
