@@ -73,14 +73,15 @@ def is_valid_amount(amount):
     amount is inputted value from user for debit/credit
     function ensures input is valid and not a negative value
     """
-    if amount.startswith("-"):
-        return False
-    else:
-        try:
-            float(amount)
-            return True
-        except ValueError:
-            return False
+    amount_tokens = amount.split(".")
+    if len(amount_tokens) == 1:
+        return amount_tokens[0].isdigit()
+    elif len(amount_tokens) == 2:
+        if amount_tokens[0].isdigit():
+            if amount_tokens[1].isdigit and len(amount_tokens[1]) == 2:
+                return True
+
+    return False
 
 
 def get_valid_amount(prompt):
@@ -92,26 +93,8 @@ def get_valid_amount(prompt):
     """
     input_amount = input(prompt)
     while not is_valid_amount(input_amount):
-        input_amount = input("Please enter a non-negative dollar value: ")
+        input_amount = input("Please enter a dollar value (e.g., $50.50): ")
     return float(input_amount)
-
-
-def has_another_transaction(prompt):
-    """
-    str -> bool
-
-    prompt is the prompt presented to the user
-
-    return True is user has another transaction; otherwise, False
-    """
-
-    action_choice = input("Would you like to make another transaction (y/n)? ")
-    if action_choice.lower() == "y" or action_choice.lower() == "yes":
-        return True
-    elif action_choice.lower() == "n" or action_choice.lower() == "no":
-        return False
-    else:
-        return has_another_transaction(prompt)
 
 
 def checkbook_loop():
@@ -127,35 +110,33 @@ def checkbook_loop():
     action_choice = input(prompt)
 
     while action_choice not in ("1234"):
-        action_choice = input("Invalid choice. Please enter 1-4: ")
+        action_choice = input(
+            f"Invalid choice: {action_choice}\n\nPlease enter 1-4: "
+        )
 
     # process menu choice #####################################################
     if int(action_choice) == 1:
-        curr_bal = view_balance()
-        print("Your current balance is : ${}".format(curr_bal))
+        curr_bal = view_balance(LEDGER_FILENAME)
+        print("\nYour current balance is : ${}".format(curr_bal))
+        print()
 
     elif int(action_choice) == 2:
-        withdraw_prompt = "Enter amount for withdrawal in dollars: $"
+        withdraw_prompt = "\nEnter amount for withdrawal in dollars: $"
         debit_value = get_valid_amount(withdraw_prompt)
         withdraw_record = create_withdraw_record(debit_value)
         write_record(LEDGER_FILENAME, withdraw_record)
 
     elif int(action_choice) == 3:
-        deposit_prompt = "Enter amount for deposit in dollars: $"
+        deposit_prompt = "\nEnter amount for deposit in dollars: $"
         credit_value = get_valid_amount(deposit_prompt)
         deposit_record = create_deposit_record(credit_value)
         write_record(LEDGER_FILENAME, deposit_record)
 
     elif int(action_choice) == 4:
-        return
+        exit()
     ##########################################################################
 
-    continue_prompt = "Would you like to make another transaction (y/n)? "
-    if has_another_transaction(continue_prompt):
-        print()
-        checkbook_loop()
-    else:
-        return
+    return checkbook_loop()
 
 
 if __name__ == "__main__":
