@@ -18,6 +18,21 @@ CSV_HEADER = {
 LEDGER_FILENAME = "ledger.csv"
 ##############################################################################
 
+def get_trans(ledger_file):
+    '''
+    str -> list
+    ledger_file is name of the ledger file
+    composes a list of dictionaries from ledger
+    '''
+    transact_list = []
+    with open(ledger_file) as lf:
+        transact_list = [{key: int(v for key, v in row.items()} for row in csv.DictReader(lf, skipinitialspace=True)]
+        return transact_list
+
+def print_all(ledg_list):
+    for dict in ledg_list:
+        for key in dict:
+            print('{}: {}'.format(key, dict[key])
 
 def view_balance(ledger_file):
     """
