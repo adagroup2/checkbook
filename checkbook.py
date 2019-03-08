@@ -4,13 +4,15 @@ import os
 
 # CONSTANTS ##################################################################
 TIMESTAMP_ROW = "timestamp"
+CATEGORY_ROW = "category"
 DESCRIPTION_ROW = "description"
 AMOUNT_ROW = "amount"
-FIELDNAMES = (TIMESTAMP_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
+FIELDNAMES = (TIMESTAMP_ROW, CATEGORY_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
 CSV_HEADER = {
     FIELDNAMES[0]: FIELDNAMES[0],
     FIELDNAMES[1]: FIELDNAMES[1],
     FIELDNAMES[2]: FIELDNAMES[2],
+    FIELDNAMES[3]: FIELDNAMES[3],
 }
 
 LEDGER_FILENAME = "ledger.csv"
@@ -42,28 +44,42 @@ def write_record(ledger_file, record):
         writer.writerow(record)
 
 
-def create_deposit_record(amount):
+def create_deposit_record(category, description, amount):
     """
-    float -> dict
+    str, str, float -> dict
 
+    category is category of purchase (e.g., income, reimbursement)
+    description is a description of the purchase (e.g., "paycheck for March")
     amount is a float of the amount to deposit
 
     return dictionary of withdraw record
     """
     timestamp = datetime.datetime.now()
-    return {TIMESTAMP_ROW: timestamp, AMOUNT_ROW: amount}
+    return {
+        TIMESTAMP_ROW: timestamp,
+        CATEGORY_ROW: category,
+        DESCRIPTION_ROW: description,
+        AMOUNT_ROW: amount,
+    }
 
 
-def create_withdraw_record(amount):
+def create_withdraw_record(category, description, amount):
     """
-    float -> dict
+    str, str, float -> dict
 
+    category is category of purchase (e.g., grocery, child care)
+    description is a description of the purchase (e.g., "beer for party")
     amount is a float of the amount to withdraw
 
     return dictionary of withdraw record
     """
     timestamp = datetime.datetime.now()
-    return {TIMESTAMP_ROW: timestamp, AMOUNT_ROW: -1 * amount}
+    return {
+        TIMESTAMP_ROW: timestamp,
+        CATEGORY_ROW: category,
+        DESCRIPTION_ROW: description,
+        AMOUNT_ROW: -1 * amount,
+    }
 
 
 def is_valid_amount(amount):
@@ -121,15 +137,27 @@ def checkbook_loop():
         print()
 
     elif int(action_choice) == 2:
-        withdraw_prompt = "\nEnter amount for withdrawal in dollars: $"
+        category = input("\nEnter a category for withdrawal: ")
+        description = input("Enter a description for withdrawal: ")
+
+        withdraw_prompt = "Enter amount for withdrawal in dollars: $"
         debit_value = get_valid_amount(withdraw_prompt)
-        withdraw_record = create_withdraw_record(debit_value)
+
+        withdraw_record = create_withdraw_record(
+            category, description, debit_value
+        )
         write_record(LEDGER_FILENAME, withdraw_record)
 
     elif int(action_choice) == 3:
-        deposit_prompt = "\nEnter amount for deposit in dollars: $"
+        category = input("\nEnter a category for deposit: ")
+        description = input("Enter a description for deposit: ")
+
+        deposit_prompt = "Enter amount for deposit in dollars: $"
         credit_value = get_valid_amount(deposit_prompt)
-        deposit_record = create_deposit_record(credit_value)
+
+        deposit_record = create_deposit_record(
+            category, description, credit_value
+        )
         write_record(LEDGER_FILENAME, deposit_record)
 
     elif int(action_choice) == 4:
