@@ -8,37 +8,37 @@ def test_create_deposit_record():
     deposit1 = checkbook.create_deposit_record(
         "income", "paycheck for March", 1.00
     )
-    assert isinstance(deposit1[checkbook.TIMESTAMP_ROW], datetime.datetime)
-    assert deposit1[checkbook.CATEGORY_ROW] == "income"
-    assert deposit1[checkbook.DESCRIPTION_ROW] == "paycheck for March"
-    assert deposit1[checkbook.AMOUNT_ROW] == "1.00"
+    assert isinstance(deposit1[checkbook.TIMESTAMP_COL], datetime.datetime)
+    assert deposit1[checkbook.CATEGORY_COL] == "income"
+    assert deposit1[checkbook.DESCRIPTION_COL] == "paycheck for March"
+    assert deposit1[checkbook.AMOUNT_COL] == "1.00"
 
     deposit2 = checkbook.create_deposit_record(
         "reimbursement", "reimbursement for beer for party", 20.14
     )
-    assert isinstance(deposit2[checkbook.TIMESTAMP_ROW], datetime.datetime)
-    assert deposit2[checkbook.CATEGORY_ROW] == "reimbursement"
+    assert isinstance(deposit2[checkbook.TIMESTAMP_COL], datetime.datetime)
+    assert deposit2[checkbook.CATEGORY_COL] == "reimbursement"
     assert (
-        deposit2[checkbook.DESCRIPTION_ROW]
+        deposit2[checkbook.DESCRIPTION_COL]
         == "reimbursement for beer for party"
     )
-    assert deposit2[checkbook.AMOUNT_ROW] == "20.14"
+    assert deposit2[checkbook.AMOUNT_COL] == "20.14"
 
 
 def test_create_withdraw_record():
     withdraw1 = checkbook.create_withdraw_record("grocery", "gum", 1.00)
-    assert isinstance(withdraw1[checkbook.TIMESTAMP_ROW], datetime.datetime)
-    assert withdraw1[checkbook.CATEGORY_ROW] == "grocery"
-    assert withdraw1[checkbook.DESCRIPTION_ROW] == "gum"
-    assert withdraw1[checkbook.AMOUNT_ROW] == "-1.00"
+    assert isinstance(withdraw1[checkbook.TIMESTAMP_COL], datetime.datetime)
+    assert withdraw1[checkbook.CATEGORY_COL] == "grocery"
+    assert withdraw1[checkbook.DESCRIPTION_COL] == "gum"
+    assert withdraw1[checkbook.AMOUNT_COL] == "-1.00"
 
     withdraw2 = checkbook.create_withdraw_record(
         "child care", "babysitter for one hour", 20.14
     )
-    assert isinstance(withdraw2[checkbook.TIMESTAMP_ROW], datetime.datetime)
-    assert withdraw2[checkbook.CATEGORY_ROW] == "child care"
-    assert withdraw2[checkbook.DESCRIPTION_ROW] == "babysitter for one hour"
-    assert withdraw2[checkbook.AMOUNT_ROW] == "-20.14"
+    assert isinstance(withdraw2[checkbook.TIMESTAMP_COL], datetime.datetime)
+    assert withdraw2[checkbook.CATEGORY_COL] == "child care"
+    assert withdraw2[checkbook.DESCRIPTION_COL] == "babysitter for one hour"
+    assert withdraw2[checkbook.AMOUNT_COL] == "-20.14"
 
 
 def test_view_balance():
@@ -69,9 +69,9 @@ def test_write_record():
         descriptions = []
         amounts = []
         for row in reader:
-            categories.append(row[checkbook.CATEGORY_ROW])
-            descriptions.append(row[checkbook.DESCRIPTION_ROW])
-            amounts.append(row[checkbook.AMOUNT_ROW])
+            categories.append(row[checkbook.CATEGORY_COL])
+            descriptions.append(row[checkbook.DESCRIPTION_COL])
+            amounts.append(row[checkbook.AMOUNT_COL])
 
         assert categories[0] == "test1"
         assert categories[1] == "test2"
@@ -115,11 +115,11 @@ def test_create_ledger_file():
     with open("test_ledger_file.csv") as tlf:
         reader = csv.DictReader(tlf, checkbook.FIELDNAMES)
         first_row = [row for row in reader][0]
-        assert first_row[checkbook.ID_ROW] == "id"
-        assert first_row[checkbook.TIMESTAMP_ROW] == "timestamp"
-        assert first_row[checkbook.CATEGORY_ROW] == "category"
-        assert first_row[checkbook.DESCRIPTION_ROW] == "description"
-        assert first_row[checkbook.AMOUNT_ROW] == "amount"
+        assert first_row[checkbook.ID_COL] == "id"
+        assert first_row[checkbook.TIMESTAMP_COL] == "timestamp"
+        assert first_row[checkbook.CATEGORY_COL] == "category"
+        assert first_row[checkbook.DESCRIPTION_COL] == "description"
+        assert first_row[checkbook.AMOUNT_COL] == "amount"
 
     os.remove(test_csv_filename)
 

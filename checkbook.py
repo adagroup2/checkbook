@@ -3,12 +3,12 @@ import datetime
 import os
 
 # CONSTANTS ##################################################################
-ID_ROW = "id"
-TIMESTAMP_ROW = "timestamp"
-CATEGORY_ROW = "category"
-DESCRIPTION_ROW = "description"
-AMOUNT_ROW = "amount"
-FIELDNAMES = (ID_ROW, TIMESTAMP_ROW, CATEGORY_ROW, DESCRIPTION_ROW, AMOUNT_ROW)
+ID_COL = "id"
+TIMESTAMP_COL = "timestamp"
+CATEGORY_COL = "category"
+DESCRIPTION_COL = "description"
+AMOUNT_COL = "amount"
+FIELDNAMES = (ID_COL, TIMESTAMP_COL, CATEGORY_COL, DESCRIPTION_COL, AMOUNT_COL)
 CSV_HEADER = {
     FIELDNAMES[0]: FIELDNAMES[0],
     FIELDNAMES[1]: FIELDNAMES[1],
@@ -69,7 +69,7 @@ def view_balance(ledger_file):
     """
     with open(ledger_file) as lf:
         reader = csv.DictReader(lf)
-        amounts = [float(row[AMOUNT_ROW]) for row in reader]
+        amounts = [float(row[AMOUNT_COL]) for row in reader]
         return sum(amounts)
 
 
@@ -99,10 +99,10 @@ def create_deposit_record(category, description, amount):
     """
     timestamp = datetime.datetime.now()
     return {
-        TIMESTAMP_ROW: timestamp,
-        CATEGORY_ROW: category,
-        DESCRIPTION_ROW: description,
-        AMOUNT_ROW: f"{amount:.2f}",
+        TIMESTAMP_COL: timestamp,
+        CATEGORY_COL: category,
+        DESCRIPTION_COL: description,
+        AMOUNT_COL: f"{amount:.2f}",
     }
 
 
@@ -116,12 +116,14 @@ def create_withdraw_record(category, description, amount):
 
     return dictionary of withdraw record
     """
+    row_id = last_row_id(LEDGER_FILENAME) + 1
     timestamp = datetime.datetime.now()
     return {
-        TIMESTAMP_ROW: timestamp,
-        CATEGORY_ROW: category,
-        DESCRIPTION_ROW: description,
-        AMOUNT_ROW: f"{-1 * amount:.2f}",
+        ID_COL = 
+        TIMESTAMP_COL: timestamp,
+        CATEGORY_COL: category,
+        DESCRIPTION_COL: description,
+        AMOUNT_COL: f"{-1 * amount:.2f}",
     }
 
 
@@ -140,7 +142,8 @@ def last_row_id(ledger_file):
     with open(ledger_file) as lf:
         reader = csv.DictReader(lf, FIELDNAMES)
         rows = [row for row in reader]
-        return int(rows[-1][ID_ROW]) if len(rows) > 1 else 0
+        last_id = int(rows[-1][ID_COL])
+        return last_id if len(rows) > 1 else 0
 
 
 def is_valid_amount(amount):
