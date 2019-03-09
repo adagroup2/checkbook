@@ -20,6 +20,7 @@ CSV_HEADER = {
 LEDGER_FILENAME = "ledger.csv"
 ##############################################################################
 
+
 def get_trans(ledger_file):
     '''
     str -> list
@@ -27,8 +28,10 @@ def get_trans(ledger_file):
     composes a list of dictionaries from ledger
     '''
     with open(ledger_file) as lf:
-        transact_list = [{k: v for k, v in row.items()} for row in csv.DictReader(lf, skipinitialspace = True)]
+        transact_list = [{k: v for k, v in row.items()}
+                         for row in csv.DictReader(lf, skipinitialspace=True)]
         return transact_list
+
 
 def print_all(ledg_list):
     '''
@@ -38,6 +41,7 @@ def print_all(ledg_list):
     for dict in ledg_list:
         for key in dict:
             print('{}: {}'.format(key, dict[key]))
+
 
 def view_balance(ledger_file):
     """
@@ -156,6 +160,16 @@ def get_valid_amount(prompt):
     return float(input_amount)
 
 
+def get_date(prompt):
+    '''
+    str -> str
+    prompt is string user input
+
+    returns a date string formatted for searching through ledger dictionary
+    '''
+    pass
+
+
 def checkbook_loop():
     """
     implements CLI for checkbook application
@@ -205,11 +219,27 @@ def checkbook_loop():
             category, description, credit_value
         )
         write_record(LEDGER_FILENAME, deposit_record)
-   
+
     elif int(action_choice) == 4:
         ledger_list = get_trans(LEDGER_FILENAME)
         print_all(ledger_list)
-    
+        history_choice = input(
+            '\nWould you like to search transactions? y/n: \n\n')
+        if history_choice.startswith('y'.lower()):
+            search_choice = input(
+                '1) Select By Date\n2) Select By Category\n3) Select By Description\n4) Exit to main menu \nYour Choice? \n''')
+            while search_choice not in ("1234"):
+                search_choice = input(
+                    f"Invalid choice: {action_choice}\n\nPlease enter 1-5: ")
+            if int(search_choice) == 1:
+                print('1: Search by Date\n')
+            elif int(search_choice) == 2:
+                print('2: Search by Category\n')
+            elif int(search_choice) == 3:
+                print('3: Search by Description keyword\n')
+            elif int(search_choice) == 4:
+                print('returning to main menu\n')
+
     elif int(action_choice) == 5:
         exit()
     ##########################################################################
