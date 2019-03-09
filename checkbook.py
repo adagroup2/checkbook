@@ -26,15 +26,18 @@ def get_trans(ledger_file):
     ledger_file is name of the ledger file
     composes a list of dictionaries from ledger
     '''
-    transact_list = []
     with open(ledger_file) as lf:
-        transact_list = [{key: int(v for key, v in row.items()} for row in csv.DictReader(lf, skipinitialspace=True)]
+        transact_list = [{k: v for k, v in row.items()} for row in csv.DictReader(lf, skipinitialspace = True)]
         return transact_list
 
 def print_all(ledg_list):
+    '''
+    list -> str
+    prints all transactions to console
+    '''
     for dict in ledg_list:
         for key in dict:
-            print('{}: {}'.format(key, dict[key])
+            print('{}: {}'.format(key, dict[key]))
 
 def view_balance(ledger_file):
     """
@@ -163,12 +166,12 @@ def checkbook_loop():
         "1) View current balance\n"
         "2) Record a debit (withdraw)\n"
         "3) Record a credit (deposit)\n"
-        "4) Exit\n\n"
-        "Your choice? "
+        "4) View Transaction History\n"
+        "5) Exit\n\n"
     )
     action_choice = input(prompt)
 
-    while action_choice not in ("1234"):
+    while action_choice not in ("12345"):
         action_choice = input(
             f"Invalid choice: {action_choice}\n\nPlease enter 1-4: "
         )
@@ -202,8 +205,12 @@ def checkbook_loop():
             category, description, credit_value
         )
         write_record(LEDGER_FILENAME, deposit_record)
-
+   
     elif int(action_choice) == 4:
+        ledger_list = get_trans(LEDGER_FILENAME)
+        print_all(ledger_list)
+    
+    elif int(action_choice) == 5:
         exit()
     ##########################################################################
 
