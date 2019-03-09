@@ -160,14 +160,38 @@ def get_valid_amount(prompt):
     return float(input_amount)
 
 
-def get_date(prompt):
+def get_date():
     '''
-    str -> str
-    prompt is string user input
+     -> str
+    prompts for string user input
 
     returns a date string formatted for searching through ledger dictionary
     '''
-    pass
+    year_val = input('Please enter a year in form XXXX: ')
+    while not len(year_val) == 4 or not year_val.isdigit():
+        year_val = input('Please enter a year in form XXXX: ')
+    month_val = input('Please enter a month in form XX: ')
+    while not len(month_val) == 2 or not month_val.isdigit():
+        month_val = input('Please enter a month in form XX: ')
+    day_val = input('Please enter a day in form XX: ')
+    while not len(day_val) == 2 or not day_val.isdigit():
+        month_val = input('Please enter a day in form XX: ')
+    date_string = year_val + '-' + month_val + '-' + day_val
+    return date_string
+
+
+def print_by_date(some_date, ledg_list):
+    '''
+    str-> str
+
+    some_date is string inputted date
+    returns  string transactions from dictionary where date matches parameters presented
+    '''
+    for dict in ledg_list:
+        if dict['timestamp'].startswith(some_date):
+            for key in dict:
+                print('{}: {}'.format(key, dict[key]))
+            print('--------------------')
 
 
 def checkbook_loop():
@@ -233,6 +257,8 @@ def checkbook_loop():
                     f"Invalid choice: {action_choice}\n\nPlease enter 1-4: ")
             if int(search_choice) == 1:
                 print('1: Search by Date\n')
+                day = get_date()
+                print_by_date(day, ledger_list)
             elif int(search_choice) == 2:
                 print('2: Search by Category\n')
             elif int(search_choice) == 3:
