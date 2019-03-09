@@ -187,7 +187,7 @@ def checkbook_loop():
 
     while action_choice not in ("12345"):
         action_choice = input(
-            f"Invalid choice: {action_choice}\n\nPlease enter 1-4: "
+            f"Invalid choice: {action_choice}\n\nPlease enter 1-5: "
         )
 
     # process menu choice #####################################################
@@ -230,7 +230,7 @@ def checkbook_loop():
                 '1) Select By Date\n2) Select By Category\n3) Select By Description\n4) Exit to main menu \nYour Choice? \n''')
             while search_choice not in ("1234"):
                 search_choice = input(
-                    f"Invalid choice: {action_choice}\n\nPlease enter 1-5: ")
+                    f"Invalid choice: {action_choice}\n\nPlease enter 1-4: ")
             if int(search_choice) == 1:
                 print('1: Search by Date\n')
             elif int(search_choice) == 2:
