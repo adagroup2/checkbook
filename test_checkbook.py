@@ -11,7 +11,7 @@ def test_create_deposit_record():
     assert isinstance(deposit1[checkbook.TIMESTAMP_ROW], datetime.datetime)
     assert deposit1[checkbook.CATEGORY_ROW] == "income"
     assert deposit1[checkbook.DESCRIPTION_ROW] == "paycheck for March"
-    assert deposit1[checkbook.AMOUNT_ROW] == 1.00
+    assert deposit1[checkbook.AMOUNT_ROW] == "1.00"
 
     deposit2 = checkbook.create_deposit_record(
         "reimbursement", "reimbursement for beer for party", 20.14
@@ -22,7 +22,7 @@ def test_create_deposit_record():
         deposit2[checkbook.DESCRIPTION_ROW]
         == "reimbursement for beer for party"
     )
-    assert deposit2[checkbook.AMOUNT_ROW] == 20.14
+    assert deposit2[checkbook.AMOUNT_ROW] == "20.14"
 
 
 def test_create_withdraw_record():
@@ -30,7 +30,7 @@ def test_create_withdraw_record():
     assert isinstance(withdraw1[checkbook.TIMESTAMP_ROW], datetime.datetime)
     assert withdraw1[checkbook.CATEGORY_ROW] == "grocery"
     assert withdraw1[checkbook.DESCRIPTION_ROW] == "gum"
-    assert withdraw1[checkbook.AMOUNT_ROW] == -1.00
+    assert withdraw1[checkbook.AMOUNT_ROW] == "-1.00"
 
     withdraw2 = checkbook.create_withdraw_record(
         "child care", "babysitter for one hour", 20.14
@@ -38,7 +38,7 @@ def test_create_withdraw_record():
     assert isinstance(withdraw2[checkbook.TIMESTAMP_ROW], datetime.datetime)
     assert withdraw2[checkbook.CATEGORY_ROW] == "child care"
     assert withdraw2[checkbook.DESCRIPTION_ROW] == "babysitter for one hour"
-    assert withdraw2[checkbook.AMOUNT_ROW] == -20.14
+    assert withdraw2[checkbook.AMOUNT_ROW] == "-20.14"
 
 
 def test_view_balance():
@@ -102,3 +102,34 @@ def test_is_valid_amount():
     assert checkbook.is_valid_amount("1.23")
     assert checkbook.is_valid_amount("34.56")
     assert checkbook.is_valid_amount("2345.23")
+
+
+def test_file_exists():
+    assert checkbook.file_exists("dummy_ledger_file1.csv")
+    assert not checkbook.file_exists("nonexistentfile.csv")
+
+
+def test_create_ledger_file():
+    test_csv_filename = "test_ledger_file.csv"
+    checkbook.create_ledger_file(test_csv_filename)
+    with open("test_ledger_file.csv") as tlf:
+        reader = csv.DictReader(tlf, checkbook.FIELDNAMES)
+        first_row = [row for row in reader][0]
+        assert first_row[checkbook.ID_ROW] == "id"
+        assert first_row[checkbook.TIMESTAMP_ROW] == "timestamp"
+        assert first_row[checkbook.CATEGORY_ROW] == "category"
+        assert first_row[checkbook.DESCRIPTION_ROW] == "description"
+        assert first_row[checkbook.AMOUNT_ROW] == "amount"
+
+    os.remove(test_csv_filename)
+
+
+def test_is_valid_action_choice():
+    assert checkbook.is_valid_action_choice(checkbook.OPTION_VIEW_BALANCE)
+    assert checkbook.is_valid_action_choice(checkbook.OPTION_DEPOSIT)
+
+    assert not checkbook.is_valid_action_choice("12")
+    assert not checkbook.is_valid_action_choice("a")
+    assert not checkbook.is_valid_action_choice("abc")
+    assert not checkbook.is_valid_action_choice("")
+    assert not checkbook.is_valid_action_choice("@")
