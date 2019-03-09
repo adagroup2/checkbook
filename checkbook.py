@@ -179,6 +179,17 @@ def get_date():
     date_string = year_val + '-' + month_val + '-' + day_val
     return date_string
 
+def get_cat():
+    '''
+
+    --> str
+    prompts user for string input
+    returns a string
+
+    '''
+    cat_value = input('Please enter a category: ')
+    return cat_value
+
 
 def print_by_date(some_date, ledg_list):
     '''
@@ -189,6 +200,19 @@ def print_by_date(some_date, ledg_list):
     '''
     for dict in ledg_list:
         if dict['timestamp'].startswith(some_date):
+            for key in dict:
+                print('{}: {}'.format(key, dict[key]))
+            print('--------------------')
+
+def print_by_cat(some_cat, ledg_list):
+    '''
+    str-> str
+
+    some_cat is string inputted category
+    returns  string transactions from dictionary where category matches parameters presented
+    '''
+    for dict in ledg_list:
+        if dict['category'] == some_cat:
             for key in dict:
                 print('{}: {}'.format(key, dict[key]))
             print('--------------------')
@@ -261,6 +285,8 @@ def checkbook_loop():
                 print_by_date(day, ledger_list)
             elif int(search_choice) == 2:
                 print('2: Search by Category\n')
+                category = get_cat()
+                print_by_cat(category, ledger_list)
             elif int(search_choice) == 3:
                 print('3: Search by Description keyword\n')
             elif int(search_choice) == 4:
