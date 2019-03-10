@@ -2,13 +2,15 @@ import copy
 import csv
 import datetime
 import os
+import sys
+
 
 # CONSTANTS ##################################################################
-ID_COL = "id"
-TIMESTAMP_COL = "timestamp"
-CATEGORY_COL = "category"
-DESCRIPTION_COL = "description"
-AMOUNT_COL = "amount"
+ID_COL = "ID"
+TIMESTAMP_COL = "Timestamp"
+CATEGORY_COL = "Category"
+DESCRIPTION_COL = "Description"
+AMOUNT_COL = "Amount"
 COL_NAMES = (ID_COL, TIMESTAMP_COL, CATEGORY_COL, DESCRIPTION_COL, AMOUNT_COL)
 
 LEDGER_FILENAME = "ledger.csv"
@@ -34,7 +36,9 @@ OPTIONS = (
 def get_trans(ledger_file):
     """
     str -> list
+
     ledger_file is name of the ledger file
+
     composes a list of dictionaries from ledger
     """
     with open(ledger_file) as lf:
@@ -45,34 +49,73 @@ def get_trans(ledger_file):
         return transact_list
 
 
-def print_all(ledg_list):
+def print_ledger_stats(ledg_list):
     """
-    list -> str
-    prints all transactions to console
+    dict -> None
+
+    ledg_list is a list of dictionaries representing transactions
+
+    print statistics for the ledg_list
     """
-    deb_val_list = []
-    cred_val_list = []
-    for dict in ledg_list:
-        for key in dict:
-            if key == 'amount':
-                if float(dict[key].startswith('-')):
-                    deb_val_list.append(float(dict[key].replace('-','')))
-                else:
-                    cred_val_list.append(float(dict[key]))
-                print('{}: ${:,.2f}'.format(key, float(dict[key])))
-            else:
-                print("{}: {}".format(key, dict[key]))
-        print('------------------')
-            
-    average_dep = sum(deb_val_list) / len(deb_val_list)
-    average_cred = sum(cred_val_list) / len(cred_val_list)
-    print('Maximum credit: ${:,.2f}'.format(max(cred_val_list)))
-    print('Minimum credit: ${:,.2f}'.format(min(cred_val_list)))
-    print('Maximum debit: ${:,.2f}'.format(max(deb_val_list)))
-    print('Minimum debit: ${:,.2f}'.format(min(deb_val_list)))
-    print('Average debit: ${:,.2f}'.format(average_dep))
-    print('Average credit: ${:,.2f}'.format(average_cred))
-    print('------------------\n')
+    deb_list = []
+    cred_list = []
+    for transaction in ledg_list:
+        amount = transaction[AMOUNT_COL]
+        if amount.startswith("-"):
+            deb_list.append(float(amount.replace("-", "")))
+        else:
+            cred_list.append(float(amount))
+
+    average_dep = sum(deb_list) / len(deb_list)
+    average_cred = sum(cred_list) / len(cred_list)
+    print(
+        f'\n{"Max Credit":<15}|{"Min Credit":<15}|'
+        f'{"Max Debit":<15}|{"Min Debit":<15}|'
+        f'{"Avg Credit":<15}|{"Avg Debit":<15}\n'
+        f"{'-'*15}|{'-'*15}|{'-'*15}|{'-'*15}|{'-'*15}|{'-'*15}\n"
+        f"${max(cred_list):<14,.2f}|${min(cred_list):<14,.2f}|"
+        f"${max(deb_list):<14,.2f}|${min(deb_list):<14,.2f}|"
+        f"${average_cred:<14,.2f}|${average_dep:<14,.2f}"
+    )
+
+
+def print_transaction(transaction):
+    """
+    dict -> None
+
+    transaction is a dict of the transaction
+
+    print the transaction
+    """
+    transaction_id = transaction[ID_COL]
+    timestamp = transaction[TIMESTAMP_COL]
+    category = transaction[CATEGORY_COL]
+    description = transaction[DESCRIPTION_COL]
+    amount = transaction[AMOUNT_COL]
+
+    print(
+        f"{'-'*4}|{'-'*20}|{'-'*20}|{'-'*50}|{'-'*15}\n"  # 14 + '$' for amount
+        f"{transaction_id:<4}|{timestamp:<20}|{category[:20]:<20}|"
+        f"{description[:50]:<50}|${float(amount):<14,.2f}"
+    )
+
+
+def print_ledger(ledg_list):
+    """
+    list of dict -> None
+
+    ledg_list is a list of dictionaries representing transactions
+
+    print all transactions from ledg_list to console
+    """
+    # print header
+    print(
+        f"\n{ID_COL:<4}|{TIMESTAMP_COL:<20}|{CATEGORY_COL:<20}|"
+        f"{DESCRIPTION_COL:<50}|{AMOUNT_COL:<15}"
+    )
+
+    for transaction in ledg_list:
+        print_transaction(transaction)
 
 
 def view_balance(ledger_file):
@@ -103,43 +146,45 @@ def write_record(ledger_file, record):
         writer.writerow(record)
 
 
-def create_deposit_record(category, description, amount):
+def create_deposit_record(date, time, category, description, amount):
     """
-    str, str, float -> dict
+    str, str, str, str, float -> dict
 
-    category is category of purchase (e.g., income, reimbursement)
-    description is a description of the purchase (e.g., "paycheck for March")
+    date is the date of the transaction
+    time is the time of the transaction
+    category is category of the deposit (e.g., income, reimbursement)
+    description is a description of the deposit (e.g., "paycheck for March")
     amount is the amount to deposit
 
     return dictionary of deposit record
     """
-    timestamp = datetime.datetime.now()
     row_id = last_row_id(LEDGER_FILENAME) + 1
     return {
         ID_COL: row_id,
-        TIMESTAMP_COL: timestamp,
+        TIMESTAMP_COL: date + " " + time,
         CATEGORY_COL: category,
         DESCRIPTION_COL: description,
         AMOUNT_COL: f"{amount:.2f}",
     }
 
 
-def create_withdraw_record(category, description, amount):
+def create_withdraw_record(date, time, category, description, amount):
     """
-    str, str, float -> dict
+    str, str, str, str, float -> dict
 
-    category is category of purchase (e.g., grocery, child care)
-    description is a description of the purchase
+    date is the date of the transaction
+    time is the time of the transaction
+    category is category of the withdrawal (e.g., grocery, child care)
+    description is a description of the withdrawal
     (e.g., "food and drinks for party")
     amount is the amount to withdraw
 
     return dictionary of withdraw record
     """
     row_id = last_row_id(LEDGER_FILENAME) + 1
-    timestamp = datetime.datetime.now()
     return {
         ID_COL: row_id,
-        TIMESTAMP_COL: timestamp,
+        TIMESTAMP_COL: date + " " + time,
         CATEGORY_COL: category,
         DESCRIPTION_COL: description,
         AMOUNT_COL: f"{-1 * amount:.2f}",
@@ -147,10 +192,18 @@ def create_withdraw_record(category, description, amount):
 
 
 def modify_transaction(
-    ledger_file, row_id, timestamp, category, description, amount
+    ledger_file, row_id, date, time, category, description, amount
 ):
     """
-    str, int, datetime, str, str, float-> None
+    str, int, str, str, str, str, float-> None
+
+    ledger_file is the name of the ledger file to modify
+    row_id is the ID of the transaction to modify
+    date is the date of the transaction
+    time is the time of the transaction
+    category is category of the transaction
+    description is a description of the transaction
+    amount is the amount of the transaction
 
     overwrites the row at row_id in ledger_file
     """
@@ -165,13 +218,13 @@ def modify_transaction(
     for row in rows:
         modified_row = copy.deepcopy(row)
         if modified_row[ID_COL] == str(row_id):
-            modified_row[TIMESTAMP_COL] = timestamp
+            modified_row[TIMESTAMP_COL] = date + " " + time
             modified_row[CATEGORY_COL] = category
             modified_row[DESCRIPTION_COL] = description
             if modified_row[AMOUNT_COL][0] == "-":
-                modified_row[AMOUNT_COL] = -1 * amount
+                modified_row[AMOUNT_COL] = f"{-1 * amount:.2f}"
             else:
-                modified_row[AMOUNT_COL] = amount
+                modified_row[AMOUNT_COL] = f"{amount:.2f}"
         modified_rows.append(modified_row)
 
     with open(temp_filename, "w") as mlf:
@@ -227,50 +280,8 @@ def get_valid_amount(prompt):
     if is_valid_amount(input_amount):
         return float(input_amount)
     else:
-        print("\nPlease enter a dollar value (e.g., $50.50)\n")
+        print("\nPlease enter a valid dollar value (e.g., $50.50)\n")
         return get_valid_amount(prompt)
-
-
-def get_date():
-    """
-     -> str
-    prompts for string user input
-
-    returns a date string formatted for searching through ledger dictionary
-    """
-    year_val = input("Please enter a year in form XXXX: ")
-    while not len(year_val) == 4 or not year_val.isdigit():
-        year_val = input("Please enter a year in form XXXX: ")
-    month_val = input("Please enter a month in form XX: ")
-    while not len(month_val) == 2 or not month_val.isdigit():
-        month_val = input("Please enter a month in form XX: ")
-    day_val = input("Please enter a day in form XX: ")
-    while not len(day_val) == 2 or not day_val.isdigit():
-        month_val = input("Please enter a day in form XX: ")
-    date_string = year_val + "-" + month_val + "-" + day_val
-    return date_string
-
-
-def get_cat():
-    """
-
-    --> str
-    prompts user for string input
-    returns a string
-
-    """
-    cat_value = input("Please enter a category: ")
-    return cat_value
-
-def get_desc():
-    '''
-
-    -->str
-    prompts user for string input
-    returns a string
-    '''
-    desc_value = input("please choose a word or phrase to search descriptions: ")
-    return desc_value
 
 
 def print_by_date(some_date, ledg_list):
@@ -278,23 +289,37 @@ def print_by_date(some_date, ledg_list):
     str-> str
 
     some_date is string inputted date
-    returns  string transactions from dictionary where date matches parameters presented
+    ledg_list is a list of dictionaries representing transactions
+
+    returns string transactions from dictionary where date matches parameters
+    presented
     """
     val_list = []
-    for dict in ledg_list:
-        if dict["timestamp"].startswith(some_date):
-            for key in dict:
-                if key == 'amount':
-                    val_list.append(float(dict[key]))
-                    print('{}: ${:,.2f}'.format(key, float(dict[key])))
+    for transaction in ledg_list:
+        if transaction[TIMESTAMP_COL].startswith(some_date):
+            for key in transaction:
+                if key == AMOUNT_COL:
+                    val_list.append(float(transaction[key]))
+                    print("{}: ${:,.2f}".format(key, float(transaction[key])))
                 else:
-                    print("{}: {}".format(key, dict[key]))
+                    print("{}: {}".format(key, transaction[key]))
             print("--------------------")
-    average = sum(val_list) / len(val_list)
-    print('Maximum transaction in {}: ${:,.2f}'.format(some_date, max(val_list)))
-    print('Minimum transaction in {}: ${:,.2f}'.format(some_date, min(val_list)))
-    print('Average transaction in {}: ${:,.2f}'.format(some_date, average))
-    print('------------------\n')
+    if len(val_list) > 0:
+        average = sum(val_list) / len(val_list)
+        print(
+            "Maximum transaction in {}: ${:,.2f}".format(
+                some_date, max(val_list)
+            )
+        )
+        print(
+            "Minimum transaction in {}: ${:,.2f}".format(
+                some_date, min(val_list)
+            )
+        )
+        print("Average transaction in {}: ${:,.2f}".format(some_date, average))
+        print("------------------")
+    else:
+        print("\nNo results.")
 
 
 def print_by_cat(some_cat, ledg_list):
@@ -302,44 +327,77 @@ def print_by_cat(some_cat, ledg_list):
     str-> str
 
     some_cat is string inputted category
-    returns  string transactions from dictionary where category matches parameters presented
+    ledg_list is a list of dictionaries representing transactions
+
+    returns string transactions from dictionary where category matches
+    parameters presented
     """
     val_list = []
-    for dict in ledg_list:
-        if dict["category"] == some_cat:
-            for key in dict:
-                if key == 'amount':
-                    val_list.append(float(dict[key]))
-                    print('{}: ${:,.2f}'.format(key, float(dict[key])))
+    for transaction in ledg_list:
+        if transaction[CATEGORY_COL] == some_cat:
+            for key in transaction:
+                if key == AMOUNT_COL:
+                    val_list.append(float(transaction[key]))
+                    print("{}: ${:,.2f}".format(key, float(transaction[key])))
                 else:
-                    print("{}: {}".format(key, dict[key]))
+                    print("{}: {}".format(key, transaction[key]))
             print("--------------------")
-    average = sum(val_list) / len(val_list)
-    print('Maximum transaction in {}: ${:,.2f}'.format(some_cat, max(val_list)))
-    print('Minimum transaction in {}: ${:,.2f}'.format(some_cat, min(val_list)))
-    print('Average transaction in {}: ${:,.2f}'.format(some_cat, average))
-    print('------------------\n')
+    if len(val_list) > 0:
+        average = sum(val_list) / len(val_list)
+        print(
+            "Maximum transaction in {}: ${:,.2f}".format(
+                some_cat, max(val_list)
+            )
+        )
+        print(
+            "Minimum transaction in {}: ${:,.2f}".format(
+                some_cat, min(val_list)
+            )
+        )
+        print("Average transaction in {}: ${:,.2f}".format(some_cat, average))
+        print("------------------")
+    else:
+        print("\nNo results.")
+
 
 def print_by_desc(some_desc, ledg_list):
     """
     str-> str
 
     some_cat is string inputted category
-    returns  string transactions from dictionary where category matches parameters presented
+    ledg_list is a list of dictionaries representing transactions
+
+    returns string transactions from dictionary where category matches
+    parameters presented
     """
     val_list = []
-    for dict in ledg_list:
-        if some_desc in dict["description"]:
-            for key in dict:
-                print("{}: {}".format(key, dict[key]))
-                if key == 'amount':
-                    val_list.append(float(dict[key]))
+    for transaction in ledg_list:
+        if some_desc in transaction[DESCRIPTION_COL]:
+            for key in transaction:
+                if key == AMOUNT_COL:
+                    val_list.append(float(transaction[key]))
+                    print("{}: ${:,.2f}".format(key, float(transaction[key])))
+                else:
+                    print("{}: {}".format(key, transaction[key]))
+
             print("--------------------\n")
-    average = sum(val_list) / len(val_list)
-    print('Maximum transaction in {}: ${:,.2f}'.format(some_desc, max(val_list)))
-    print('Minimum transaction in {}: ${:,.2f}'.format(some_desc, min(val_list)))
-    print('Average transaction in {}: ${:,.2f}'.format(some_desc, average))
-    print('------------------\n')
+
+    if len(val_list) > 0:
+        average = sum(val_list) / len(val_list)
+        print(
+            "Maximum transaction in {}: ${:,.2f}".format(
+                some_desc, max(val_list)
+            )
+        )
+        print(
+            "Minimum transaction in {}: ${:,.2f}".format(
+                some_desc, min(val_list)
+            )
+        )
+        print("Average transaction in {}: ${:,.2f}".format(some_desc, average))
+        print("------------------")
+    else:
+        print("\nNo results.")
 
 
 def file_exists(ledger_filename):
@@ -426,9 +484,73 @@ def get_transaction_id(prompt, ledger_filename):
         ledger_filename, int(transaction_id)
     ):
         return transaction_id
+    else:
+        print("\nInvalid transaction ID.")
+        return get_transaction_id(prompt, ledger_filename)
 
-    print("\nEnter a valid transaction_id.")
-    return get_transaction_id(prompt, ledger_filename)
+
+def is_valid_date(date):
+    """
+    str -> bool
+
+    date is the date to validate
+
+    return True if date is valid (YYYY-MM-DD); otherwise, False
+    """
+    try:
+        datetime.datetime.strptime(date, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+
+def get_date_input(prompt):
+    """
+    str -> str
+
+    prompt is prompt to present to user
+
+    return valid date inputted by user
+    """
+    date = input(prompt)
+
+    if is_valid_date(date):
+        return date
+    else:
+        print("\nInvalid date.")
+        return get_date_input(prompt)
+
+
+def is_valid_time(time):
+    """
+    str -> bool
+
+    time is the time to validate
+
+    return True if time is in valid 24-hour clock format; otherwise, False
+    """
+    try:
+        datetime.datetime.strptime(time, "%H:%M:%S")
+        return True
+    except ValueError:
+        return False
+
+
+def get_time_input(prompt):
+    """
+    str -> str
+
+    prompt is prompt to present to user
+
+    return valid time inputted by user
+    """
+    time = input(prompt)
+
+    if is_valid_time(time):
+        return time
+    else:
+        print("\nInvalid time.\n")
+        return get_time_input(prompt)
 
 
 def checkbook_loop():
@@ -440,13 +562,19 @@ def checkbook_loop():
         f"{OPTION_VIEW_BALANCE}) View current balance\n"
         f"{OPTION_WITHDRAW}) Record a debit (withdraw)\n"
         f"{OPTION_DEPOSIT}) Record a credit (deposit)\n"
-        f"{OPTION_VIEW_HISTORY}) View transaction history\n"
+        f"{OPTION_VIEW_HISTORY}) View and search transaction history\n"
         f"{OPTION_MODIFY_TRANSACTION}) Modify a transaction\n"
         f"{OPTION_EXIT}) Exit\n"
     )
     print(menu)
     prompt = "Your choice? "
     action_choice = get_action_choice(prompt)
+
+    date_prompt = "\nEnter date (YYYY-MM-DD): "
+    time_prompt = "Enter time (HH:MM:SS in 24-hour clock format): "
+    category_prompt = "Enter a category: "
+    description_prompt = "Enter a description: "
+    amount_prompt = "Enter amount: $"
 
     # process menu choice #####################################################
     if action_choice == OPTION_VIEW_BALANCE:
@@ -455,72 +583,75 @@ def checkbook_loop():
         print()
 
     elif action_choice == OPTION_WITHDRAW:
-        category = input("\nEnter a category for withdrawal: ")
-        description = input("Enter a description for withdrawal: ")
+        date = get_date_input(date_prompt)
+        time = get_time_input(time_prompt)
+        category = input(category_prompt)
+        description = input(description_prompt)
 
-        withdraw_prompt = "Enter amount for withdrawal in dollars: $"
-        debit_value = get_valid_amount(withdraw_prompt)
+        debit_value = get_valid_amount(amount_prompt)
 
         withdraw_record = create_withdraw_record(
-            category, description, debit_value
+            date, time, category, description, debit_value
         )
         write_record(LEDGER_FILENAME, withdraw_record)
 
     elif action_choice == OPTION_DEPOSIT:
-        category = input("\nEnter a category for deposit: ")
-        description = input("Enter a description for deposit: ")
+        date = get_date_input(date_prompt)
+        time = get_time_input(time_prompt)
+        category = input(category_prompt)
+        description = input(description_prompt)
 
-        deposit_prompt = "Enter amount for deposit in dollars: $"
-        credit_value = get_valid_amount(deposit_prompt)
+        credit_value = get_valid_amount(amount_prompt)
 
         deposit_record = create_deposit_record(
-            category, description, credit_value
+            date, time, category, description, credit_value
         )
         write_record(LEDGER_FILENAME, deposit_record)
 
     elif action_choice == OPTION_VIEW_HISTORY:
         ledger_list = get_trans(LEDGER_FILENAME)
-        print_all(ledger_list)
-        history_choice = input(
-            "\nWould you like to search transactions? y/n: \n\n"
-        )
-        if history_choice.startswith("y".lower()):
+        print_ledger(ledger_list)
+        print_ledger_stats(ledger_list)
+        history_choice = input("\nSearch transactions (y/n)? ")
+        if history_choice.lower().startswith("y"):
             search_choice = input(
-                "1) Select By Date\n2) Select By Category\n3) Select By Description\n4) Exit to main menu \nYour Choice? \n"
-                ""
+                "\n1) Select By Date\n2) Select By Category\n3) Select By "
+                "Description\n4) Exit to main menu\n\nYour Choice? "
             )
-            while search_choice not in ("1234"):
+            while search_choice not in ("1", "2", "3", "4"):
                 search_choice = input(
-                    f"Invalid choice: {action_choice}\n\nPlease enter 1-4: "
+                    f"\nInvalid choice: {action_choice}\n\nPlease enter 1-4: "
                 )
             if int(search_choice) == 1:
-                print("1: Search by Date\n")
-                day = get_date()
+                print("\n1: Search by date")
+                day = get_date_input(date_prompt)
                 print_by_date(day, ledger_list)
             elif int(search_choice) == 2:
-                print("2: Search by Category\n")
-                category = get_cat()
+                print("\n2: Search by category\n")
+                category = input(category_prompt)
                 print_by_cat(category, ledger_list)
             elif int(search_choice) == 3:
-                print("3: Search by Description keyword\n")
-                descript = get_desc()
+                print("\n3: Search by description keyword\n")
+                descript = input("Search descriptions with word or phrase: ")
                 print_by_desc(descript, ledger_list)
             elif int(search_choice) == 4:
-                print("returning to main menu\n")
+                print("\nReturning to main menu")
 
     elif action_choice == OPTION_MODIFY_TRANSACTION:
         tid_prompt = "Enter id of transaction to modify: "
         transaction_id = int(get_transaction_id(tid_prompt, LEDGER_FILENAME))
 
-        amount = input("\nTimestamp: ")
-        category = input("Category: ")
-        description = input("Description: ")
-        amount = get_valid_amount("Amount: ")
+        date = get_date_input(date_prompt)
+        time = get_time_input(time_prompt)
+        category = input(category_prompt)
+        description = input(description_prompt)
+        amount = get_valid_amount(amount_prompt)
 
         modify_transaction(
             LEDGER_FILENAME,
             transaction_id,
-            amount,
+            date,
+            time,
             category,
             description,
             amount,
@@ -533,9 +664,14 @@ def checkbook_loop():
     return checkbook_loop()
 
 
+def set_winsize(rows, cols):
+    sys.stdout.write(f"\x1b[8;{rows};{cols}t")
+
+
 if __name__ == "__main__":
     if not file_exists(LEDGER_FILENAME):
         create_ledger_file(LEDGER_FILENAME)
 
+    set_winsize(24, 125)
     print("\n~~~ Welcome to your terminal checkbook! ~~~")
     checkbook_loop()
