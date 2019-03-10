@@ -1,3 +1,7 @@
+# Codeup Data Science
+# Ada Group 2
+# By Matthew Capper and Michael P. Moran
+
 import copy
 import csv
 import datetime
