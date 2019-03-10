@@ -50,9 +50,29 @@ def print_all(ledg_list):
     list -> str
     prints all transactions to console
     """
+    deb_val_list = []
+    cred_val_list = []
     for dict in ledg_list:
         for key in dict:
-            print("{}: {}".format(key, dict[key]))
+            if key == 'amount':
+                if float(dict[key].startswith('-')):
+                    deb_val_list.append(float(dict[key].replace('-','')))
+                else:
+                    cred_val_list.append(float(dict[key]))
+                print('{}: ${:,.2f}'.format(key, float(dict[key])))
+            else:
+                print("{}: {}".format(key, dict[key]))
+        print('------------------')
+            
+    average_dep = sum(deb_val_list) / len(deb_val_list)
+    average_cred = sum(cred_val_list) / len(cred_val_list)
+    print('Maximum credit: ${:,.2f}'.format(max(cred_val_list)))
+    print('Minimum credit: ${:,.2f}'.format(min(cred_val_list)))
+    print('Maximum debit: ${:,.2f}'.format(max(deb_val_list)))
+    print('Minimum debit: ${:,.2f}'.format(min(deb_val_list)))
+    print('Average debit: ${:,.2f}'.format(average_dep))
+    print('Average credit: ${:,.2f}'.format(average_cred))
+    print('------------------\n')
 
 
 def view_balance(ledger_file):
@@ -242,6 +262,16 @@ def get_cat():
     cat_value = input("Please enter a category: ")
     return cat_value
 
+def get_desc():
+    '''
+
+    -->str
+    prompts user for string input
+    returns a string
+    '''
+    desc_value = input("please choose a word or phrase to search descriptions: ")
+    return desc_value
+
 
 def print_by_date(some_date, ledg_list):
     """
@@ -250,11 +280,21 @@ def print_by_date(some_date, ledg_list):
     some_date is string inputted date
     returns  string transactions from dictionary where date matches parameters presented
     """
+    val_list = []
     for dict in ledg_list:
         if dict["timestamp"].startswith(some_date):
             for key in dict:
-                print("{}: {}".format(key, dict[key]))
+                if key == 'amount':
+                    val_list.append(float(dict[key]))
+                    print('{}: ${:,.2f}'.format(key, float(dict[key])))
+                else:
+                    print("{}: {}".format(key, dict[key]))
             print("--------------------")
+    average = sum(val_list) / len(val_list)
+    print('Maximum transaction in {}: ${:,.2f}'.format(some_date, max(val_list)))
+    print('Minimum transaction in {}: ${:,.2f}'.format(some_date, min(val_list)))
+    print('Average transaction in {}: ${:,.2f}'.format(some_date, average))
+    print('------------------\n')
 
 
 def print_by_cat(some_cat, ledg_list):
@@ -264,11 +304,42 @@ def print_by_cat(some_cat, ledg_list):
     some_cat is string inputted category
     returns  string transactions from dictionary where category matches parameters presented
     """
+    val_list = []
     for dict in ledg_list:
         if dict["category"] == some_cat:
             for key in dict:
-                print("{}: {}".format(key, dict[key]))
+                if key == 'amount':
+                    val_list.append(float(dict[key]))
+                    print('{}: ${:,.2f}'.format(key, float(dict[key])))
+                else:
+                    print("{}: {}".format(key, dict[key]))
             print("--------------------")
+    average = sum(val_list) / len(val_list)
+    print('Maximum transaction in {}: ${:,.2f}'.format(some_cat, max(val_list)))
+    print('Minimum transaction in {}: ${:,.2f}'.format(some_cat, min(val_list)))
+    print('Average transaction in {}: ${:,.2f}'.format(some_cat, average))
+    print('------------------\n')
+
+def print_by_desc(some_desc, ledg_list):
+    """
+    str-> str
+
+    some_cat is string inputted category
+    returns  string transactions from dictionary where category matches parameters presented
+    """
+    val_list = []
+    for dict in ledg_list:
+        if some_desc in dict["description"]:
+            for key in dict:
+                print("{}: {}".format(key, dict[key]))
+                if key == 'amount':
+                    val_list.append(float(dict[key]))
+            print("--------------------\n")
+    average = sum(val_list) / len(val_list)
+    print('Maximum transaction in {}: ${:,.2f}'.format(some_desc, max(val_list)))
+    print('Minimum transaction in {}: ${:,.2f}'.format(some_desc, min(val_list)))
+    print('Average transaction in {}: ${:,.2f}'.format(some_desc, average))
+    print('------------------\n')
 
 
 def file_exists(ledger_filename):
@@ -432,6 +503,8 @@ def checkbook_loop():
                 print_by_cat(category, ledger_list)
             elif int(search_choice) == 3:
                 print("3: Search by Description keyword\n")
+                descript = get_desc()
+                print_by_desc(descript, ledger_list)
             elif int(search_choice) == 4:
                 print("returning to main menu\n")
 
