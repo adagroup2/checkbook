@@ -14,14 +14,11 @@ def test_create_deposit_record():
     assert deposit1[checkbook.AMOUNT_COL] == "1.00"
 
     deposit2 = checkbook.create_deposit_record(
-        "reimbursement", "reimbursement for beer for party", 20.14
+        "reimbursement", "mileage", 20.14
     )
     assert isinstance(deposit2[checkbook.TIMESTAMP_COL], datetime.datetime)
     assert deposit2[checkbook.CATEGORY_COL] == "reimbursement"
-    assert (
-        deposit2[checkbook.DESCRIPTION_COL]
-        == "reimbursement for beer for party"
-    )
+    assert deposit2[checkbook.DESCRIPTION_COL] == "mileage"
     assert deposit2[checkbook.AMOUNT_COL] == "20.14"
 
 
@@ -63,7 +60,7 @@ def test_write_record():
     )
 
     with open(dummy_filename) as df:
-        reader = csv.DictReader(df, checkbook.FIELDNAMES)
+        reader = csv.DictReader(df, checkbook.COL_NAMES)
 
         categories = []
         descriptions = []
@@ -113,7 +110,7 @@ def test_create_ledger_file():
     test_csv_filename = "test_ledger_file.csv"
     checkbook.create_ledger_file(test_csv_filename)
     with open("test_ledger_file.csv") as tlf:
-        reader = csv.DictReader(tlf, checkbook.FIELDNAMES)
+        reader = csv.DictReader(tlf, checkbook.COL_NAMES)
         first_row = [row for row in reader][0]
         assert first_row[checkbook.ID_COL] == "id"
         assert first_row[checkbook.TIMESTAMP_COL] == "timestamp"
@@ -133,3 +130,11 @@ def test_is_valid_action_choice():
     assert not checkbook.is_valid_action_choice("abc")
     assert not checkbook.is_valid_action_choice("")
     assert not checkbook.is_valid_action_choice("@")
+
+
+def test_is_valid_transaction_id():
+    assert not checkbook.is_valid_transaction_id("dummy_ledger_file4.csv", 1)
+    assert checkbook.is_valid_transaction_id("dummy_ledger_file5.csv", 2)
+
+
+# TODO: unit test for modify_transaction()
