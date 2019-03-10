@@ -1,3 +1,4 @@
+import copy
 import csv
 import datetime
 import os
@@ -8,14 +9,7 @@ TIMESTAMP_COL = "timestamp"
 CATEGORY_COL = "category"
 DESCRIPTION_COL = "description"
 AMOUNT_COL = "amount"
-FIELDNAMES = (ID_COL, TIMESTAMP_COL, CATEGORY_COL, DESCRIPTION_COL, AMOUNT_COL)
-CSV_HEADER = {
-    FIELDNAMES[0]: FIELDNAMES[0],
-    FIELDNAMES[1]: FIELDNAMES[1],
-    FIELDNAMES[2]: FIELDNAMES[2],
-    FIELDNAMES[3]: FIELDNAMES[3],
-    FIELDNAMES[4]: FIELDNAMES[4],
-}
+COL_NAMES = (ID_COL, TIMESTAMP_COL, CATEGORY_COL, DESCRIPTION_COL, AMOUNT_COL)
 
 LEDGER_FILENAME = "ledger.csv"
 
@@ -23,13 +17,15 @@ OPTION_VIEW_BALANCE = "1"
 OPTION_WITHDRAW = "2"
 OPTION_DEPOSIT = "3"
 OPTION_VIEW_HISTORY = "4"
-OPTION_EXIT = "5"
+OPTION_MODIFY_TRANSACTION = "5"
+OPTION_EXIT = "6"
 
 OPTIONS = (
     OPTION_VIEW_BALANCE,
     OPTION_WITHDRAW,
     OPTION_DEPOSIT,
     OPTION_VIEW_HISTORY,
+    OPTION_MODIFY_TRANSACTION,
     OPTION_EXIT,
 )
 ##############################################################################
@@ -83,7 +79,7 @@ def write_record(ledger_file, record):
     write record to end of ledger file
     """
     with open(ledger_file, "a") as lf:
-        writer = csv.DictWriter(lf, FIELDNAMES)
+        writer = csv.DictWriter(lf, COL_NAMES)
         writer.writerow(record)
 
 
@@ -98,7 +94,9 @@ def create_deposit_record(category, description, amount):
     return dictionary of deposit record
     """
     timestamp = datetime.datetime.now()
+    row_id = last_row_id(LEDGER_FILENAME) + 1
     return {
+        ID_COL: row_id,
         TIMESTAMP_COL: timestamp,
         CATEGORY_COL: category,
         DESCRIPTION_COL: description,
@@ -111,7 +109,8 @@ def create_withdraw_record(category, description, amount):
     str, str, float -> dict
 
     category is category of purchase (e.g., grocery, child care)
-    description is a description of the purchase (e.g., "beer for party")
+    description is a description of the purchase
+    (e.g., "food and drinks for party")
     amount is the amount to withdraw
 
     return dictionary of withdraw record
@@ -119,7 +118,7 @@ def create_withdraw_record(category, description, amount):
     row_id = last_row_id(LEDGER_FILENAME) + 1
     timestamp = datetime.datetime.now()
     return {
-        ID_COL = 
+        ID_COL: row_id,
         TIMESTAMP_COL: timestamp,
         CATEGORY_COL: category,
         DESCRIPTION_COL: description,
@@ -127,8 +126,40 @@ def create_withdraw_record(category, description, amount):
     }
 
 
-def modify_transaction():
-    pass
+def modify_transaction(
+    ledger_file, row_id, timestamp, category, description, amount
+):
+    """
+    str, int, datetime, str, str, float-> None
+
+    overwrites the row at row_id in ledger_file
+    """
+    temp_filename = "modified_ledger.csv"
+
+    rows = []
+    with open(ledger_file) as lf:
+        reader = csv.DictReader(lf, COL_NAMES)
+        rows += [row for row in reader]
+
+    modified_rows = []
+    for row in rows:
+        modified_row = copy.deepcopy(row)
+        if modified_row[ID_COL] == str(row_id):
+            modified_row[TIMESTAMP_COL] = timestamp
+            modified_row[CATEGORY_COL] = category
+            modified_row[DESCRIPTION_COL] = description
+            if modified_row[AMOUNT_COL][0] == "-":
+                modified_row[AMOUNT_COL] = -1 * amount
+            else:
+                modified_row[AMOUNT_COL] = amount
+        modified_rows.append(modified_row)
+
+    with open(temp_filename, "w") as mlf:
+        writer = csv.DictWriter(mlf, COL_NAMES)
+        writer.writerows(modified_rows)
+
+    os.remove(ledger_file)
+    os.rename(temp_filename, ledger_file)
 
 
 def last_row_id(ledger_file):
@@ -140,10 +171,9 @@ def last_row_id(ledger_file):
     return id of the last row in ledger file or 0 if no last row
     """
     with open(ledger_file) as lf:
-        reader = csv.DictReader(lf, FIELDNAMES)
+        reader = csv.DictReader(lf, COL_NAMES)
         rows = [row for row in reader]
-        last_id = int(rows[-1][ID_COL])
-        return last_id if len(rows) > 1 else 0
+        return int(rows[-1][ID_COL]) if len(rows) > 1 else 0
 
 
 def is_valid_amount(amount):
@@ -262,8 +292,8 @@ def create_ledger_file(ledger_filename):
     CAUTION: will overwrite the ledger file if it exists
     """
     with open(ledger_filename, "w") as lf:
-        writer = csv.DictWriter(lf, FIELDNAMES)
-        writer.writerow(CSV_HEADER)
+        writer = csv.DictWriter(lf, COL_NAMES)
+        writer.writeheader()
 
 
 def is_valid_action_choice(action_choice):
@@ -296,16 +326,51 @@ def get_action_choice(prompt):
         return get_action_choice(prompt)
 
 
+def is_valid_transaction_id(ledger_filename, transaction_id):
+    """
+    str, int - > bool
+
+    transaction_id is the id whose validity will be determined
+    ledger_filename is the file whose transaction ids will be calculated
+
+    return True if
+    """
+    with open(ledger_filename) as lf:
+        reader = csv.reader(lf)
+        return 1 <= transaction_id <= len([row for row in reader]) - 1
+
+
+def get_transaction_id(prompt, ledger_filename):
+    """
+    str -> str
+
+    prompt is prompt to present to user
+    ledger_filename is the ledger's filename
+
+    return the transaction id inputted by user
+    """
+    transaction_id = input("\n" + prompt)
+
+    if transaction_id.isdigit() and is_valid_transaction_id(
+        ledger_filename, int(transaction_id)
+    ):
+        return transaction_id
+
+    print("\nEnter a valid transaction_id.")
+    return get_transaction_id(prompt, ledger_filename)
+
+
 def checkbook_loop():
     """
     implements CLI for checkbook application
     """
     menu = (
-        f"What would you like to do?\n\n"
+        f"\nWhat would you like to do?\n\n"
         f"{OPTION_VIEW_BALANCE}) View current balance\n"
         f"{OPTION_WITHDRAW}) Record a debit (withdraw)\n"
         f"{OPTION_DEPOSIT}) Record a credit (deposit)\n"
         f"{OPTION_VIEW_HISTORY}) View transaction history\n"
+        f"{OPTION_MODIFY_TRANSACTION}) Modify a transaction\n"
         f"{OPTION_EXIT}) Exit\n"
     )
     print(menu)
@@ -370,6 +435,24 @@ def checkbook_loop():
             elif int(search_choice) == 4:
                 print("returning to main menu\n")
 
+    elif action_choice == OPTION_MODIFY_TRANSACTION:
+        tid_prompt = "Enter id of transaction to modify: "
+        transaction_id = int(get_transaction_id(tid_prompt, LEDGER_FILENAME))
+
+        amount = input("\nTimestamp: ")
+        category = input("Category: ")
+        description = input("Description: ")
+        amount = get_valid_amount("Amount: ")
+
+        modify_transaction(
+            LEDGER_FILENAME,
+            transaction_id,
+            amount,
+            category,
+            description,
+            amount,
+        )
+
     elif action_choice == OPTION_EXIT:
         exit(0)
     ##########################################################################
@@ -381,5 +464,5 @@ if __name__ == "__main__":
     if not file_exists(LEDGER_FILENAME):
         create_ledger_file(LEDGER_FILENAME)
 
-    print("\n~~~ Welcome to your terminal checkbook! ~~~\n")
+    print("\n~~~ Welcome to your terminal checkbook! ~~~")
     checkbook_loop()
