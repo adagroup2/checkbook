@@ -70,17 +70,22 @@ def print_ledger_stats(ledg_list):
         else:
             cred_list.append(float(amount))
 
-    average_dep = sum(deb_list) / len(deb_list)
-    average_cred = sum(cred_list) / len(cred_list)
-    print(
-        f'\n{"Max Credit":<15}|{"Min Credit":<15}|'
-        f'{"Max Debit":<15}|{"Min Debit":<15}|'
-        f'{"Avg Credit":<15}|{"Avg Debit":<15}\n'
-        f"{'-'*15}|{'-'*15}|{'-'*15}|{'-'*15}|{'-'*15}|{'-'*15}\n"
-        f"${max(cred_list):<14,.2f}|${min(cred_list):<14,.2f}|"
-        f"${max(deb_list):<14,.2f}|${min(deb_list):<14,.2f}|"
-        f"${average_cred:<14,.2f}|${average_dep:<14,.2f}"
-    )
+    if cred_list:
+        average_cred = sum(cred_list) / len(cred_list)
+        print(
+            f'\n{"Max Credit":<15}|{"Min Credit":<15}|{"Avg Credit":<15}\n'
+            f"{'-'*15}|{'-'*15}|{'-'*15}\n"
+            f"${max(cred_list):<14,.2f}|${min(cred_list):<14,.2f}|"
+            f"${average_cred:<14,.2f}"
+        )
+    if deb_list:
+        average_dep = sum(deb_list) / len(deb_list)
+        print(
+            f'\n{"Max Debit":<15}|{"Min Debit":<15}|{"Avg Debit":<15}\n'
+            f"{'-'*15}|{'-'*15}|{'-'*15}\n"
+            f"${max(deb_list):<14,.2f}|${min(deb_list):<14,.2f}|"
+            f"${average_dep:<14,.2f}"
+        )
 
 
 def print_transaction(transaction):
@@ -118,8 +123,11 @@ def print_ledger(ledg_list):
         f"{DESCRIPTION_COL:<50}|{AMOUNT_COL:<15}"
     )
 
-    for transaction in ledg_list:
-        print_transaction(transaction)
+    if ledg_list:
+        for transaction in ledg_list:
+            print_transaction(transaction)
+    else:
+        print("None.")
 
 
 def view_balance(ledger_file):
