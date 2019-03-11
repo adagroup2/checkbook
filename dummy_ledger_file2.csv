@@ -1,2 +1,2 @@
-timestamp,amount
-2018-10-04 19:37:29.273849,40.00
+ID,Timestamp,Category,Description,Amount
+1,2017-02-03 02:12:45,cat1,desc1,20.00

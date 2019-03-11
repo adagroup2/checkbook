@@ -1,3 +1,3 @@
-timestamp,amount
-2019-01-29 03:45:19.759869,-30.00
-2019-02-21 09:23:56.463839,10.00
+ID,Timestamp,Category,Description,Amount
+1,2017-03-10 12:23:45,cat1,desc1,-10.00
+2,2018-05-23 14:12:56,cat2,desc2,-50.00
